@@ -5,6 +5,7 @@ use crate::logger;
 use serde_json::json;
 
 static STATE_UNREAD: &str = "unread";
+static TAG_UNTAG: &str = "_untagged_";
 
 pub enum Action {
     Delete,
@@ -43,6 +44,7 @@ impl API {
             ("consumer_key", consumer_key),
             ("access_token", access_token),
             ("state", &STATE_UNREAD.to_owned()),
+            ("tag", &TAG_UNTAG.to_owned()),
         ];
         let response = reqwest::Client::new()
             .post(pocket_retrieve_url)
