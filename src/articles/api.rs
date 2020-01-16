@@ -4,8 +4,21 @@ use crate::configuration::Configuration;
 use crate::logger;
 use serde_json::json;
 
-static ACTION_DELETE: &str = "delete";
 static STATE_UNREAD: &str = "unread";
+
+pub enum Action {
+    Delete,
+    Archive,
+}
+
+impl Action {
+    fn value(&self) -> &str {
+        match *self {
+            Action::Delete => "delete",
+            Action::Archive => "archive",
+        }
+    }
+}
 
 pub struct API {
     configuration: Configuration,
@@ -51,7 +64,7 @@ impl API {
         }
     }
 
-    pub fn delete(&self, articles: Vec<&Article>) {
+    pub fn modify(&self, articles: Vec<&Article>, action: Action) {
         let token_handler = TokenHandler::new();
         let (consumer_key, pocket_send_url, access_token) = (
             &self.configuration.consumer_key,
@@ -63,7 +76,7 @@ impl API {
             .into_iter()
             .map(|article| {
                 json!({
-                    "action": ACTION_DELETE,
+                    "action": action.value(),
                     "item_id": article.id,
                 })
             })
@@ -85,5 +98,13 @@ impl API {
                 logger::log(&error.to_string());
             }
         }
+    }
+
+    pub fn delete(&self, articles: Vec<&Article>) {
+        self.modify(articles, Action::Delete)
+    }
+
+    pub fn archive(&self, articles: Vec<&Article>) {
+        self.modify(articles, Action::Archive)
     }
 }
